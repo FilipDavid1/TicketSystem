@@ -32,9 +32,9 @@ Súbor `.env` musí obsahovať:
 DB_CONNECTION=mysql
 DB_HOST=db
 DB_PORT=3306
-DB_DATABASE=ticket_system_db
-DB_USERNAME=ticket_user
-DB_PASSWORD=secret
+DB_DATABASE=xxx
+DB_USERNAME=xxx
+DB_PASSWORD=xxx
 ```
 
 ### 3. Spustenie Docker kontajnerov
