@@ -5,9 +5,9 @@
         </h2>
     </x-slot>
 
-    <!-- <div class="py-5">
+    <div class="py-5">
         <div class="container px-3 px-md-4 px-lg-5">
-            
+            @include('tickets.index', ['tickets' => $tickets])
         </div>
-    </div> -->
+    </div>
 </x-app-layout>
