@@ -31,6 +31,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::get('/tickets', [TicketController::class, 'index'])->name('tickets.index');
+    Route::get('/tickets/{id}', [TicketController::class, 'show'])->name('tickets.show');
+    Route::get('/tickets/{id}/edit', [TicketController::class, 'edit'])->name('tickets.edit');
+    Route::delete('/tickets/{id}', [TicketController::class, 'destroy'])->name('tickets.destroy');
 });
 
 require __DIR__.'/auth.php';

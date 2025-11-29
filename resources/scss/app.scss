@@ -32,3 +32,79 @@
         }
     }
 }
+
+.badge {
+    border: 1px solid;
+
+    &.badge-open {
+        color: #046630;
+        background-color: #dbfce7;
+        border-color: #046630;
+    }
+    &.badge-in-progress {
+        color: #ad4b1d;
+        background-color: #ffedd4;
+        border-color: #ad4b1d;
+    }
+    &.badge-resolved {
+        color: #2c3644;
+        background-color: #f3f4f6;
+        border-color: #2c3644;
+    }
+    &.badge-rejected {
+        color: #9e0912;
+        background-color: #ffe2e2;
+        border-color: #9e0912;
+    }
+    &.badge-low {
+        color: #193bb9;
+        background-color: #dbeafe;
+        border-color: #193bb9;
+    }
+    &.badge-medium {
+        color: #8e5407;
+        background-color: #fef9c2;
+        border-color: #8e5407;
+    }
+}
+
+.wrapper {
+    border: 1px solid #e8e8e8;
+    border-radius: 1em;
+    padding: 1em;
+    margin-bottom: 1.5em;
+}
+
+.light-btn {
+    background-color: #ffffff;
+    border: 1px solid #e8e8e8;
+    border-radius: 0.5em;
+    padding: 0.5em 1em;
+    color: #000;
+    text-decoration: none;
+    &:hover {
+        background-color: #e8e8e8;
+    }
+}
+
+table.table {
+    td {
+        vertical-align: middle;
+    }
+}
+
+.filters {
+    form input, form select {
+        border: none;
+        background-color: #f3f3f5;
+        color: #000;
+        border-radius: 0.5em;
+        padding: 0.5em 1em;
+        transition: all 0.3s ease;
+        &:focus {
+            outline: none;
+            box-shadow: none;
+            border: 1px solid #e8e8e8;
+        }
+    }
+}

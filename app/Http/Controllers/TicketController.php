@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ticket;
+use App\Models\Category;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
@@ -37,15 +38,17 @@ class TicketController extends Controller
             });
         }
 
+        $categories = Category::all();
+
         if (Auth::user()->role === 'user') {
             $query->where('user_id', Auth::id());
         } elseif ($request->filled('user')) {
             $query->where('user_id', $request->user);
         }
 
-        $tickets = $query->with('user', 'category')->paginate(10);
+        $tickets = $query->get();
 
-        return view('tickets.index', compact('tickets'));
+        return view('tickets.index', compact('tickets', 'categories'));
     }
 
     public function create()
