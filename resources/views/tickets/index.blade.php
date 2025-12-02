@@ -3,6 +3,22 @@
 @section('content')
 <div class="container">
   <div class="row">
+    <div class="col-6">
+      <h2>Nástenka</h2>
+      <p>Prehľad všetkých podporných tiketov</p>
+    </div>
+    <div class="col-6">
+      <div class="d-flex justify-content-end">
+        <a href="{{ route('tickets.create') }}" class="btn dark-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
+            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+          </svg>
+          Vytvoriť tiket
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="row">
     <div class="col-12 col-md-6 col-lg-4">
       <div class="wrapper">
         Otvorené tickety ({{ $tickets->where('status', 'open')->count() }})
@@ -46,7 +62,6 @@
 
     <form id="filtersForm" action="{{ route('tickets.index') }}" method="GET">
       <div class="row">
-        <!-- Search -->
         <div class="col-12 col-md-3">
           <label for="search">Hľadať</label>
           <input type="text" name="search" id="search" class="form-control"
@@ -54,7 +69,6 @@
             value="{{ request('search') }}">
         </div>
 
-        <!-- Status -->
         <div class="col-12 col-md-3">
           <label for="status">Stav</label>
           <select name="status" id="status" class="form-control" onchange="this.form.submit()">
@@ -66,7 +80,6 @@
           </select>
         </div>
 
-        <!-- Category -->
         <div class="col-12 col-md-3">
           <label for="category">Kategória</label>
           <select name="category" id="category" class="form-control" onchange="this.form.submit()">
@@ -79,7 +92,6 @@
           </select>
         </div>
 
-        <!-- Priority -->
         <div class="col-12 col-md-3">
           <label for="priority">Priorita</label>
           <select name="priority" id="priority" class="form-control" onchange="this.form.submit()">

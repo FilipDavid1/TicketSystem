@@ -46,34 +46,62 @@ class TicketController extends Controller
             $query->where('user_id', $request->user);
         }
 
-        $tickets = $query->get();
-
+        $tickets = $query->orderBy('created_at', 'desc')->get();
         return view('tickets.index', compact('tickets', 'categories'));
     }
 
     public function create()
     {
-        return view('tickets.create');
+        $categories = Category::all();
+        return view('tickets.show', ['ticket' => null, 'categories' => $categories]);
     }
 
     public function store(Request $request)
     {
-        return view('tickets.store');
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'category_id' => 'required|exists:categories,id',
+            'priority' => 'required|in:low,medium,high',
+            'status' => 'required|in:open,in_progress,resolved,rejected',
+        ]);
+
+        $validated['user_id'] = Auth::id();
+
+        Ticket::create($validated);
+
+        return redirect()->route('tickets.index')->with('success', 'Tiket bol úspešne vytvorený.');
     }
 
     public function show($id)
     {
-        return view('tickets.show', compact('ticket'));
+        $ticket = Ticket::findOrFail($id);
+        $categories = Category::all();
+        return view('tickets.show', compact('ticket', 'categories'));
     }
 
     public function edit($id)
     {
-        return view('tickets.edit', compact('ticket'));
+        $ticket = Ticket::findOrFail($id);
+        $categories = Category::all();
+        return view('tickets.show', compact('ticket', 'categories'));
     }
 
     public function update(Request $request, $id)
     {
-        return view('tickets.update', compact('ticket'));
+        $ticket = Ticket::findOrFail($id);
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'category_id' => 'required|exists:categories,id',
+            'priority' => 'required|in:low,medium,high',
+            'status' => 'required|in:open,in_progress,resolved,rejected',
+        ]);
+
+        $ticket->update($validated);
+
+        return redirect()->route('tickets.index')->with('success', 'Tiket bol úspešne aktualizovaný.');
     }
 
     public function destroy($id)
