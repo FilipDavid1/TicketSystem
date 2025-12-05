@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TicketController;
+use App\Http\Controllers\CategoryController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -26,6 +27,11 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
     Route::get('/admin', function () {
         return view('admin.dashboard');
     })->name('admin.dashboard');
+    
+    Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
+    Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
+    Route::put('/categories/{id}', [CategoryController::class, 'update'])->name('categories.update');
+    Route::delete('/categories/{id}', [CategoryController::class, 'destroy'])->name('categories.destroy');
 });
 
 Route::middleware(['auth', 'isSuperAdmin'])->group(function () {

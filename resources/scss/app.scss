@@ -1,6 +1,21 @@
 // Bootstrap
 @use "bootstrap/scss/bootstrap" as *;
 
+$danger-color: #9e0912;
+$danger-background-color: #ffe2e2;
+$success-color: #046630;
+$success-background-color: #dbfce7;
+$warning-color: #ad4b1d;
+$warning-background-color: #ffedd4;
+$info-color: #2c3644;
+$info-background-color: #f3f4f6;
+$light-color: #f3f4f6;
+$dark-color: #000;
+$white-color: #fff;
+$gray-color: #e8e8e8;
+$border-color: #e8e8e8;
+$background-color: #f3f3f5; 
+
 // Sidebar Styles
 .sidebar {
     width: 250px;
@@ -37,44 +52,56 @@
     border: 1px solid;
 
     &.badge-open {
-        color: #046630;
-        background-color: #dbfce7;
-        border-color: #046630;
+        color: $success-color;
+        background-color: $success-background-color;
+        border-color: $success-color;
     }
 
     &.badge-in-progress {
-        color: #ad4b1d;
-        background-color: #ffedd4;
-        border-color: #ad4b1d;
+        color: $warning-color;
+        background-color: $warning-background-color;
+        border-color: $warning-color;
     }
 
     &.badge-resolved {
-        color: #2c3644;
-        background-color: #f3f4f6;
-        border-color: #2c3644;
+        color: $info-color;
+        background-color: $info-background-color;
+        border-color: $info-color;
     }
 
     &.badge-rejected {
-        color: #9e0912;
-        background-color: #ffe2e2;
-        border-color: #9e0912;
+        color: $danger-color;
+        background-color: $danger-background-color;
+        border-color: $danger-color;
     }
 
     &.badge-low {
         color: #193bb9;
-        background-color: #dbeafe;
+        background-color: $info-background-color;
         border-color: #193bb9;
     }
 
     &.badge-medium {
         color: #8e5407;
-        background-color: #fef9c2;
+        background-color: $warning-background-color;
         border-color: #8e5407;
+    }
+
+    &.badge-tickets {
+        color: $dark-color;
+        background-color: $background-color;
+        border-color: $border-color;
+    }
+
+    &.badge-white {
+        color: $dark-color;
+        background-color: $white-color;
+        border-color: $border-color;
     }
 }
 
 .wrapper {
-    border: 1px solid #e8e8e8;
+    border: 1px solid $border-color;
     border-radius: 1em;
     padding: 1em;
     margin-bottom: 1.5em;
@@ -82,28 +109,28 @@
 
 .light-btn {
     background-color: #ffffff;
-    border: 1px solid #e8e8e8;
+    border: 1px solid $border-color;
     border-radius: 0.5em;
     padding: 0.5em 1em;
     color: #000;
     text-decoration: none;
 
     &:hover {
-        background-color: #e8e8e8;
+        background-color: $border-color;
     }
 }
 
 .dark-btn {
-    background-color: #000;
-    border: 1px solid #000;
+    background-color: $dark-color;
+    border: 1px solid $dark-color;
     border-radius: 0.5em;
     padding: 0.5em 1em;
-    color: #fff;
+    color: $white-color;
     text-decoration: none;
 
     &:hover {
-        background-color: #000;
-        color: #fff;
+        background-color: $dark-color;
+        color: $white-color;
     }
 }
 
@@ -118,8 +145,8 @@ table.table {
     form input,
     form select {
         border: none;
-        background-color: #f3f3f5;
-        color: #000;
+        background-color: $background-color;
+        color: $dark-color;
         border-radius: 0.5em;
         padding: 0.5em 1em;
         transition: all 0.3s ease;
@@ -127,7 +154,8 @@ table.table {
         &:focus {
             outline: none;
             box-shadow: none;
-            border: 1px solid #e8e8e8;
+            border: 1px solid $border-color;
         }
     }
 }
+
