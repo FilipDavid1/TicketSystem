@@ -5,6 +5,7 @@ use App\Http\Controllers\TicketController;
 use App\Http\Controllers\CategoryController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\CommentController;
 
 Route::get('/', function () {
     if (Auth::check()) {
@@ -51,6 +52,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/tickets/{id}/edit', [TicketController::class, 'edit'])->name('tickets.edit');
     Route::put('/tickets/{id}', [TicketController::class, 'update'])->name('tickets.update');
     Route::delete('/tickets/{id}', [TicketController::class, 'destroy'])->name('tickets.destroy');
+    Route::post('/tickets/{ticket_id}/comments', [CommentController::class, 'store'])->name('comments.store');
 });
 
 require __DIR__.'/auth.php';

@@ -75,7 +75,7 @@ class TicketController extends Controller
 
     public function show($id)
     {
-        $ticket = Ticket::findOrFail($id);
+        $ticket = Ticket::with(['comments.user'])->findOrFail($id);
         $categories = Category::all();
         return view('tickets.show', compact('ticket', 'categories'));
     }

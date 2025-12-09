@@ -115,5 +115,49 @@
       </div>
     </form>
   </div>
+
+  <!-- Comments -->
+  <div class="wrapper">
+    <h3>Komentáre</h3>
+    
+    @if($ticket->comments->count() > 0)
+      <div class="mb-4">
+        @foreach($ticket->comments as $comment)
+          <div class="comment mb-3 p-3 border rounded">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <strong>{{ $comment->user->name }}</strong>
+              <small class="text-muted">{{ $comment->created_at->diffForHumans() }}</small>
+            </div>
+            <p class="mb-0">{{ $comment->content }}</p>
+          </div>
+        @endforeach
+      </div>
+    @else
+      <p class="text-muted mb-4">Žiadne komentáre.</p>
+    @endif
+
+    <form method="POST" action="{{ route('comments.store', $ticket->id) }}">
+      @csrf
+      <div class="row">
+        <div class="col-12 mb-3">
+          <label for="content" class="form-label">Pridať komentár</label>
+          <textarea class="form-control @error('content') is-invalid @enderror" 
+            id="content" 
+            name="content" 
+            rows="3" 
+            required
+            placeholder="Zadajte komentár"></textarea>
+          @error('content')
+            <div class="invalid-feedback">{{ $message }}</div>
+          @enderror
+        </div>
+      </div>
+      <div class="d-flex justify-content-end gap-2">
+        <button type="submit" class="dark-btn">
+          Pridať komentár
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
 @endsection
