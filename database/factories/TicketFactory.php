@@ -24,7 +24,7 @@ class TicketFactory extends Factory
         return [
             'title' => $this->faker->sentence(6),
             'description' => $this->faker->paragraph(),
-            'status' => $this->faker->randomElement(['open', 'closed', 'resolved', 'rejected']),
+            'status' => $this->faker->randomElement(['open', 'in_progress', 'resolved', 'rejected']),
             'priority' => $this->faker->randomElement(['low', 'medium', 'high']),
             'user_id' => User::inRandomOrder()->first()->id,
             'category_id' => Category::inRandomOrder()->first()->id,

@@ -16,7 +16,14 @@ class CategoryController extends Controller
 
     public function index()
     {
-        $categories = Category::withCount('tickets')->with('admins')->get();
+        $user = Auth::user();
+        
+        if ($user->role === 'admin') {
+            $categories = Category::forAdmin($user->id)->withCount('tickets')->with('admins')->get();
+        } else {
+            $categories = Category::withCount('tickets')->with('admins')->get();
+        }
+        
         $admins = User::whereIn('role', ['admin', 'superadmin'])->get();
 
         return view('categories.index', compact('categories', 'admins'));
@@ -31,13 +38,22 @@ class CategoryController extends Controller
             'admin_ids.*' => 'exists:users,id',
         ]);
 
+        $user = Auth::user();
+
         $category = Category::create([
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
+            'created_by' => $user->id,
         ]);
 
-        if (!empty($validated['admin_ids'])) {
-            $category->admins()->attach($validated['admin_ids']);
+        $adminIds = $validated['admin_ids'] ?? [];
+        
+        if ($user->role === 'admin' && !in_array($user->id, $adminIds)) {
+            $adminIds[] = $user->id;
+        }
+        
+        if (!empty($adminIds)) {
+            $category->admins()->attach($adminIds);
         }
 
         return redirect()->route('categories.index')->with('success', 'Kategória bola úspešne vytvorená.');
@@ -46,6 +62,11 @@ class CategoryController extends Controller
     public function update(Request $request, $id)
     {
         $category = Category::findOrFail($id);
+        $user = Auth::user();
+
+        if ($user->role === 'admin' && $category->created_by !== $user->id) {
+            abort(403, 'Nemáte oprávnenie upravovať túto kategóriu. Môžete upravovať iba kategórie, ktoré ste vytvorili.');
+        }
 
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
@@ -59,7 +80,13 @@ class CategoryController extends Controller
             'description' => $validated['description'] ?? null,
         ]);
 
-        $category->admins()->sync($validated['admin_ids'] ?? []);
+        $adminIds = $validated['admin_ids'] ?? [];
+        
+        if ($user->role === 'admin' && !in_array($user->id, $adminIds)) {
+            $adminIds[] = $user->id;
+        }
+        
+        $category->admins()->sync($adminIds);
 
         return redirect()->route('categories.index')->with('success', 'Kategória bola úspešne aktualizovaná.');
     }
@@ -67,6 +94,12 @@ class CategoryController extends Controller
     public function destroy($id)
     {
         $category = Category::findOrFail($id);
+        $user = Auth::user();
+
+        if ($user->role === 'admin' && $category->created_by !== $user->id) {
+            abort(403, 'Nemáte oprávnenie vymazať túto kategóriu. Môžete mazať iba kategórie, ktoré ste vytvorili.');
+        }
+
         $category->delete();
 
         return redirect()->route('categories.index')->with('success', 'Kategória bola úspešne vymazaná.');

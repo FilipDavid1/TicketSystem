@@ -38,11 +38,18 @@ class TicketController extends Controller
             });
         }
 
-        $categories = Category::all();
+        $user = Auth::user();
+        
+        if ($user->role === 'admin') {
+            $categories = Category::forAdmin($user->id)->get();
+            $query->forAdmin($user->id);
+        } else {
+            $categories = Category::all();
+        }
 
-        if (Auth::user()->role === 'user') {
+        if ($user->role === 'user') {
             $query->where('user_id', Auth::id());
-        } elseif ($request->filled('user')) {
+        } elseif ($request->filled('user') && $user->role !== 'admin') {
             $query->where('user_id', $request->user);
         }
 
@@ -52,7 +59,14 @@ class TicketController extends Controller
 
     public function create()
     {
-        $categories = Category::all();
+        $user = Auth::user();
+        
+        if ($user->role === 'admin') {
+            $categories = Category::forAdmin($user->id)->get();
+        } else {
+            $categories = Category::all();
+        }
+        
         return view('tickets.show', ['ticket' => null, 'categories' => $categories]);
     }
 
@@ -76,14 +90,28 @@ class TicketController extends Controller
     public function show($id)
     {
         $ticket = Ticket::with(['comments.user'])->findOrFail($id);
-        $categories = Category::all();
+        $user = Auth::user();
+        
+        if ($user->role === 'admin') {
+            $categories = Category::forAdmin($user->id)->get();
+        } else {
+            $categories = Category::all();
+        }
+        
         return view('tickets.show', compact('ticket', 'categories'));
     }
 
     public function edit($id)
     {
         $ticket = Ticket::findOrFail($id);
-        $categories = Category::all();
+        $user = Auth::user();
+        
+        if ($user->role === 'admin') {
+            $categories = Category::forAdmin($user->id)->get();
+        } else {
+            $categories = Category::all();
+        }
+        
         return view('tickets.show', compact('ticket', 'categories'));
     }
 

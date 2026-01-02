@@ -116,11 +116,12 @@
     </form>
   </div>
 
+  @if(isset($ticket) && $ticket)
   <!-- Comments -->
   <div class="wrapper">
     <h3>Komentáre</h3>
     
-    @if($ticket->comments->count() > 0)
+    @if(isset($ticket) && $ticket && $ticket->comments->isNotEmpty())
       <div class="mb-4">
         @foreach($ticket->comments as $comment)
           <div class="comment mb-3 p-3 border rounded">
@@ -157,7 +158,8 @@
           Pridať komentár
         </button>
       </div>
-    </form>
-  </div>
+      </form>
+    </div>
+  @endif
 </div>
 @endsection

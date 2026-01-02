@@ -26,4 +26,11 @@ class Ticket extends Model
     {
         return $this->hasMany(Comment::class);
     }
+
+    public function scopeForAdmin($query, $userId)
+    {
+        return $query->whereHas('category.admins', function ($q) use ($userId) {
+            $q->where('users.id', $userId);
+        });
+    }
 }
