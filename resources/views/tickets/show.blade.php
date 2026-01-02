@@ -15,6 +15,12 @@
   </div>
 
   <div class="wrapper">
+    @if(Auth::user()->role === 'admin' && isset($ticket) && $ticket)
+    <div class="alert alert-info mb-3">
+      <strong>Poznámka:</strong> Ako admin môžete zmeniť len stav tiketu. Ostatné polia sú len na čítanie.
+    </div>
+    @endif
+    
     <form method="POST" 
       action="{{ isset($ticket) && $ticket ? route('tickets.update', $ticket->id) : route('tickets.store') }}">
       @csrf
@@ -30,7 +36,7 @@
             id="title" 
             name="title" 
             value="{{ old('title', isset($ticket) && $ticket ? $ticket->title : '') }}" 
-            required
+            {{ Auth::user()->role === 'admin' && isset($ticket) && $ticket ? 'readonly disabled' : 'required' }}
             placeholder="Zadajte názov tiketu">
           @error('title')
             <div class="invalid-feedback">{{ $message }}</div>
@@ -43,7 +49,7 @@
             id="description" 
             name="description" 
             rows="6" 
-            required
+            {{ Auth::user()->role === 'admin' && isset($ticket) && $ticket ? 'readonly disabled' : 'required' }}
             placeholder="Zadajte popis tiketu">{{ old('description', isset($ticket) && $ticket ? $ticket->description : '') }}</textarea>
           @error('description')
             <div class="invalid-feedback">{{ $message }}</div>
@@ -55,7 +61,7 @@
           <select class="form-control @error('category_id') is-invalid @enderror" 
             id="category_id" 
             name="category_id" 
-            required>
+            {{ Auth::user()->role === 'admin' && isset($ticket) && $ticket ? 'disabled' : 'required' }}>
             <option value="">Vyberte kategóriu</option>
             @foreach($categories as $category)
               <option value="{{ $category->id }}" 
@@ -69,12 +75,12 @@
           @enderror
         </div>
 
-        <div class="col-12 col-md-3 mb-3">
+        <div class="col-12 col-md-{{ (Auth::user()->role === 'user' && (!isset($ticket) || !$ticket)) ? '6' : '3' }} mb-3">
           <label for="priority" class="form-label">Priorita <span class="text-danger">*</span></label>
           <select class="form-control @error('priority') is-invalid @enderror" 
             id="priority" 
             name="priority" 
-            required>
+            {{ Auth::user()->role === 'admin' && isset($ticket) && $ticket ? 'disabled' : 'required' }}>
             <option value="">Vyberte prioritu</option>
             <option value="low" {{ old('priority', isset($ticket) && $ticket ? $ticket->priority : '') == 'low' ? 'selected' : '' }}>Nízka</option>
             <option value="medium" {{ old('priority', isset($ticket) && $ticket ? $ticket->priority : '') == 'medium' ? 'selected' : '' }}>Stredná</option>
@@ -85,6 +91,7 @@
           @enderror
         </div>
 
+        @if(in_array(Auth::user()->role, ['admin', 'superadmin']))
         <div class="col-12 col-md-3 mb-3">
           <label for="status" class="form-label">Stav <span class="text-danger">*</span></label>
           <select class="form-control @error('status') is-invalid @enderror" 
@@ -92,7 +99,7 @@
             name="status" 
             required>
             <option value="">Vyberte stav</option>
-            <option value="open" {{ old('status', isset($ticket) && $ticket ? $ticket->status : '') == 'open' ? 'selected' : '' }}>Otvorené</option>
+            <option value="open" {{ old('status', isset($ticket) && $ticket ? $ticket->status : 'open') == 'open' ? 'selected' : '' }}>Otvorené</option>
             <option value="in_progress" {{ old('status', isset($ticket) && $ticket ? $ticket->status : '') == 'in_progress' ? 'selected' : '' }}>V riešení</option>
             <option value="resolved" {{ old('status', isset($ticket) && $ticket ? $ticket->status : '') == 'resolved' ? 'selected' : '' }}>Vyriešené</option>
             <option value="rejected" {{ old('status', isset($ticket) && $ticket ? $ticket->status : '') == 'rejected' ? 'selected' : '' }}>Zamietnuté</option>
@@ -101,19 +108,59 @@
             <div class="invalid-feedback">{{ $message }}</div>
           @enderror
         </div>
+        @elseif(isset($ticket) && $ticket)
+        <div class="col-12 col-md-3 mb-3">
+          <label for="status_display" class="form-label">Stav</label>
+          <input type="text" class="form-control" id="status_display" 
+            value="@if($ticket->status == 'open')Otvorené
+              @elseif($ticket->status == 'in_progress')V riešení
+              @elseif($ticket->status == 'resolved')Vyriešené
+              @elseif($ticket->status == 'rejected')Zamietnuté
+              @endif" 
+            readonly disabled>
+        </div>
+        @endif
       </div>
 
-      <div class="d-flex justify-content-end gap-2 mt-4">
-        <a href="{{ route('tickets.index') }}" class="light-btn">Zrušiť</a>
-        <button type="submit" class="dark-btn">
-          @if(isset($ticket) && $ticket)
-            Uložiť zmeny
+      <div class="d-flex justify-content-between gap-2 mt-4">
+        @if(isset($ticket) && $ticket && (Auth::user()->role === 'superadmin' || $ticket->user_id === Auth::id()))
+        <div>
+          <button type="button" class="btn btn-danger" onclick="if(confirm('Naozaj chcete zmazať tento tiket?')) { document.getElementById('delete-form-{{ $ticket->id }}').submit(); }">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+              <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+              <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+            </svg>
+            Zmazať tiket
+          </button>
+        </div>
+        @else
+        <div></div>
+        @endif
+        <div class="d-flex gap-2">
+          <a href="{{ route('tickets.index') }}" class="light-btn">Zrušiť</a>
+          @if(Auth::user()->role === 'admin' && isset($ticket) && $ticket)
+          <button type="submit" class="dark-btn">
+            Zmeniť stav
+          </button>
           @else
-            Vytvoriť tiket
+          <button type="submit" class="dark-btn">
+            @if(isset($ticket) && $ticket)
+              Uložiť zmeny
+            @else
+              Vytvoriť tiket
+            @endif
+          </button>
           @endif
-        </button>
+        </div>
       </div>
     </form>
+
+    @if(isset($ticket) && $ticket)
+    <form id="delete-form-{{ $ticket->id }}" action="{{ route('tickets.destroy', $ticket->id) }}" method="POST" style="display: none;">
+      @csrf
+      @method('DELETE')
+    </form>
+    @endif
   </div>
 
   @if(isset($ticket) && $ticket)
