@@ -48,7 +48,7 @@
       </div>
       <div class="col-6">
         <div class="d-flex justify-content-end">
-          @if(request()->has('status') || request()->has('category') || request()->has('priority') || request()->has('search'))
+          @if(request()->has('status') || request()->has('category') || request()->has('priority') || request()->has('search') || request()->has('user'))
           <a href="{{ route('tickets.index') }}" class="light-btn">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
               <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708" />
@@ -101,6 +101,20 @@
             <option value="high" {{ request('priority') == 'high' ? 'selected' : '' }}>Vysoká</option>
           </select>
         </div>
+
+        @if(in_array(Auth::user()->role, ['admin', 'superadmin']))
+        <div class="col-12 col-md-3 mt-3">
+          <label for="user">Používateľ</label>
+          <select name="user" id="user" class="form-control" onchange="this.form.submit()">
+            <option value="">Všetci</option>
+            @foreach($users as $filterUser)
+            <option value="{{ $filterUser->id }}" {{ request('user') == $filterUser->id ? 'selected' : '' }}>
+              {{ $filterUser->name }}
+            </option>
+            @endforeach
+          </select>
+        </div>
+        @endif
       </div>
     </form>
   </div>
