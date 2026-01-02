@@ -49,12 +49,18 @@ class TicketController extends Controller
 
         if ($user->role === 'user') {
             $query->where('user_id', Auth::id());
-        } elseif ($request->filled('user') && $user->role !== 'admin') {
+        } elseif ($request->filled('user') && in_array($user->role, ['admin', 'superadmin'])) {
             $query->where('user_id', $request->user);
         }
 
         $tickets = $query->orderBy('created_at', 'desc')->get();
-        return view('tickets.index', compact('tickets', 'categories'));
+        
+        $users = [];
+        if (in_array($user->role, ['admin', 'superadmin'])) {
+            $users = \App\Models\User::orderBy('name')->get();
+        }
+        
+        return view('tickets.index', compact('tickets', 'categories', 'users'));
     }
 
     public function create()
@@ -72,13 +78,25 @@ class TicketController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'category_id' => 'required|exists:categories,id',
-            'priority' => 'required|in:low,medium,high',
-            'status' => 'required|in:open,in_progress,resolved,rejected',
-        ]);
+        $user = Auth::user();
+        
+        if (in_array($user->role, ['admin', 'superadmin'])) {
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'required|string',
+                'category_id' => 'required|exists:categories,id',
+                'priority' => 'required|in:low,medium,high',
+                'status' => 'required|in:open,in_progress,resolved,rejected',
+            ]);
+        } else {
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'required|string',
+                'category_id' => 'required|exists:categories,id',
+                'priority' => 'required|in:low,medium,high',
+            ]);
+            $validated['status'] = 'open';
+        }
 
         $validated['user_id'] = Auth::id();
 
@@ -92,7 +110,15 @@ class TicketController extends Controller
         $ticket = Ticket::with(['comments.user'])->findOrFail($id);
         $user = Auth::user();
         
+        if ($user->role === 'user' && $ticket->user_id !== $user->id) {
+            abort(403, 'Nemáte oprávnenie na zobrazenie tohto tiketu.');
+        }
+        
         if ($user->role === 'admin') {
+            $hasAccess = $ticket->category->admins()->where('users.id', $user->id)->exists();
+            if (!$hasAccess) {
+                abort(403, 'Nemáte oprávnenie na zobrazenie tohto tiketu.');
+            }
             $categories = Category::forAdmin($user->id)->get();
         } else {
             $categories = Category::all();
@@ -106,6 +132,17 @@ class TicketController extends Controller
         $ticket = Ticket::findOrFail($id);
         $user = Auth::user();
         
+        if ($user->role === 'user') {
+            if ($ticket->user_id !== $user->id) {
+                abort(403, 'Nemáte oprávnenie na úpravu tohto tiketu.');
+            }
+        } elseif ($user->role === 'admin') {
+            $hasAccess = $ticket->category->admins()->where('users.id', $user->id)->exists();
+            if (!$hasAccess) {
+                abort(403, 'Nemáte oprávnenie na úpravu tohto tiketu.');
+            }
+        }
+        
         if ($user->role === 'admin') {
             $categories = Category::forAdmin($user->id)->get();
         } else {
@@ -118,14 +155,35 @@ class TicketController extends Controller
     public function update(Request $request, $id)
     {
         $ticket = Ticket::findOrFail($id);
+        $user = Auth::user();
 
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'category_id' => 'required|exists:categories,id',
-            'priority' => 'required|in:low,medium,high',
-            'status' => 'required|in:open,in_progress,resolved,rejected',
-        ]);
+        if ($user->role === 'user') {
+            if ($ticket->user_id !== $user->id) {
+                abort(403, 'Nemáte oprávnenie na úpravu tohto tiketu.');
+            }
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'required|string',
+                'category_id' => 'required|exists:categories,id',
+                'priority' => 'required|in:low,medium,high',
+            ]);
+        } elseif ($user->role === 'admin') {
+            $hasAccess = $ticket->category->admins()->where('users.id', $user->id)->exists();
+            if (!$hasAccess) {
+                abort(403, 'Nemáte oprávnenie na úpravu tohto tiketu.');
+            }
+            $validated = $request->validate([
+                'status' => 'required|in:open,in_progress,resolved,rejected',
+            ]);
+        } else {
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'required|string',
+                'category_id' => 'required|exists:categories,id',
+                'priority' => 'required|in:low,medium,high',
+                'status' => 'required|in:open,in_progress,resolved,rejected',
+            ]);
+        }
 
         $ticket->update($validated);
 
@@ -134,6 +192,15 @@ class TicketController extends Controller
 
     public function destroy($id)
     {
-        return view('tickets.destroy', compact('ticket'));
+        $ticket = Ticket::findOrFail($id);
+        $user = Auth::user();
+
+        if ($user->role != 'superadmin' && $ticket->user_id !== $user->id) {
+            abort(403, 'Nemáte oprávnenie na zmazanie tohto tiketu. Môžete len zmeniť jeho stav.');
+        }
+
+        $ticket->delete();
+
+        return redirect()->route('tickets.index')->with('success', 'Tiket bol úspešne zmazaný.');
     }
 }
