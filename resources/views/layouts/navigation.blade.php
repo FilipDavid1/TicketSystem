@@ -80,6 +80,6 @@
 </aside>
 
 <!-- Mobile Toggle Button -->
-<button class="btn btn-primary d-md-none position-fixed top-0 start-0 m-3 rounded-circle" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar" style="z-index: 1040; width: 40px; height: 40px; padding: 0;">
+<button class="btn btn-primary d-md-none position-fixed rounded-circle mobile-menu-toggle" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar">
     <i class="bi bi-list"></i>
 </button>
