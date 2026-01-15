@@ -7,6 +7,10 @@ $success-color: #046630;
 $success-background-color: #dbfce7;
 $warning-color: #ad4b1d;
 $warning-background-color: #ffedd4;
+$superadmin-color: #6d11b0;
+$superadmin-background-color: #f3e7ff;
+$superadmin-border-color: #cfb2e9;
+$info-border-color: #e8e8e8;
 $info-color: #2c3644;
 $info-background-color: #f3f4f6;
 $light-color: #f3f4f6;
@@ -66,7 +70,7 @@ $background-color: #f3f3f5;
     &.badge-resolved {
         color: $info-color;
         background-color: $info-background-color;
-        border-color: $info-color;
+        border-color: $info-border-color;
     }
 
     &.badge-rejected {
@@ -78,7 +82,7 @@ $background-color: #f3f3f5;
     &.badge-low {
         color: #193bb9;
         background-color: $info-background-color;
-        border-color: #193bb9;
+        border-color: #bedbff;
     }
 
     &.badge-medium {
@@ -98,13 +102,23 @@ $background-color: #f3f3f5;
         background-color: $white-color;
         border-color: $border-color;
     }
+
+    &.badge-superadmin {
+        color: #6d11b0;
+        background-color: #f3e7ff;
+        border-color: #cfb2e9;
+    }
 }
 
-.wrapper {
+.wrapper, .card {
     border: 1px solid $border-color;
     border-radius: 1em;
     padding: 1em;
     margin-bottom: 1.5em;
+}
+
+.btn {
+    border-radius: 0.5em !important;
 }
 
 .light-btn {
@@ -117,6 +131,19 @@ $background-color: #f3f3f5;
 
     &:hover {
         background-color: $border-color;
+    }
+}
+
+.transparent-btn {
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: 0.5em;
+    padding: 0.5em 1em;
+    color: $dark-color;
+
+    &:hover {
+        border: 1px solid $border-color;
+        cursor: pointer;
     }
 }
 
@@ -163,3 +190,25 @@ table.table {
     }
 }
 
+a {
+    text-decoration: none !important;
+}
+
+.card.hoverable {
+    transition: all 0.3s ease;
+
+    .card-body {
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
+    }
+
+    &:hover {
+        background-color: $background-color;
+        cursor: pointer;
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+}

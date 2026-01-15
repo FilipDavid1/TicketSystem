@@ -21,6 +21,28 @@
                         {{ __('Dashboard') }}
                     </a>
                 </li>
+                @if(Auth::user()->role === 'superadmin')
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}" href="{{ route('users.index') }}">
+                            <i class="bi bi-people me-2"></i>
+                            {{ __('Správa používateľov') }}
+                        </a>
+                    </li>
+                @endif
+                @if(Auth::user()->role === 'admin' || Auth::user()->role === 'superadmin')
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('categories.*') ? 'active' : '' }}" href="{{ route('categories.index') }}">
+                            <i class="bi bi-folder me-2"></i>
+                            {{ __('Kategórie') }}
+                        </a>
+                    </li>
+                @endif
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('tickets.*') ? 'active' : '' }}" href="{{ route('tickets.index') }}">
+                        <i class="bi bi-ticket me-2"></i>
+                        {{ __('Tikety') }}
+                    </a>
+                </li>
             </ul>
         </nav>
 
