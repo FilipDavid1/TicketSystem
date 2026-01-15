@@ -18,7 +18,7 @@
     </div>
 
     <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
+        <div class="col-12">
             <div class="card shadow-sm">
                 <div class="card-body p-4">
                     <form method="POST" action="{{ route('users.update', $user->id) }}">
