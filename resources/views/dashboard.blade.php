@@ -291,8 +291,8 @@
                     <div class="card-header bg-white">
                         <div class="d-flex justify-content-between align-items-center">
                             <h5 class="mb-0">Nedávne tikety</h5>
-                            <a href="{{ route('tickets.index') }}" class="btn btn-primary">
-                                <i class="bi bi-eye"></i> Zobraziť všetky tikety
+                            <a href="{{ route('tickets.index') }}" class="transparent-btn">
+                                Zobraziť všetky tikety
                             </a>
                         </div>
                     </div>
@@ -305,14 +305,19 @@
                                         <h6 class="mb-1">{{ Str::limit($ticket->title, 40) }}</h6>
                                         <small class="text-muted">od {{ $ticket->user->name }}</small>
                                     </div>
-                                    <span class="badge ms-2
-                                        @if($ticket->priority === 'low') badge-low
-                                        @elseif($ticket->priority === 'medium') badge-medium
-                                        @elseif($ticket->priority === 'high') badge-in-progress
-                                        @else badge-rejected
-                                        @endif">
-                                        {{ ucfirst($ticket->priority) }}
-                                    </span>
+                                    @if($ticket->priority === 'low')
+                                        <span class="badge ms-2 badge-low">
+                                            Nízka
+                                        </span>
+                                    @elseif($ticket->priority === 'medium')
+                                        <span class="badge ms-2 badge-medium">
+                                            Stredná
+                                        </span>
+                                    @else
+                                        <span class="badge ms-2 badge-rejected">
+                                            Vysoká
+                                        </span>
+                                    @endif
                                 </div>
                             </a>
                             @endforeach
@@ -339,14 +344,19 @@
                                             <h6 class="mb-1">{{ $ticket->title }}</h6>
                                             <small class="text-muted">{{ Str::limit($ticket->description, 80) }}</small>
                                         </div>
-                                        <span class="badge ms-2
-                                            @if($ticket->priority === 'low') badge-low
-                                            @elseif($ticket->priority === 'medium') badge-medium
-                                            @elseif($ticket->priority === 'high') badge-in-progress
-                                            @else badge-rejected
-                                            @endif">
-                                            {{ ucfirst($ticket->priority) }}
+                                        @if($ticket->priority === 'low')
+                                        <span class="badge ms-2 badge-low">
+                                            Nízka
                                         </span>
+                                        @elseif($ticket->priority === 'medium')
+                                        <span class="badge ms-2 badge-medium">
+                                            Stredná
+                                        </span>
+                                        @else   
+                                        <span class="badge ms-2 badge-rejected">
+                                            Vysoká
+                                        </span>
+                                        @endif
                                     </div>
                                 </a>
                             @if($loop->last)
@@ -356,8 +366,8 @@
                             <div class="text-center py-5">
                                 <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
                                 <p class="text-muted mb-3">Zatiaľ nemáte žiadne tikety</p>
-                                <a href="{{ route('tickets.create') }}" class="btn btn-primary">
-                                    <i class="bi bi-plus-circle me-2"></i>Vytvoriť prvý tiket
+                                <a href="{{ route('tickets.create') }}" class="dark-btn">
+                                    Vytvoriť prvý tiket
                                 </a>
                             </div>
                         @endforelse
