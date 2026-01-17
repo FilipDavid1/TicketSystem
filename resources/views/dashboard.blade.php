@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container py-4">
+<div class="container">
     <!-- Welcome Card -->
     <div class="row mb-4">
         <div class="col-12">

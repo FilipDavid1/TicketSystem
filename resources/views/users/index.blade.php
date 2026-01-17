@@ -71,14 +71,14 @@
                             </td>
                             <td>{{ $user->created_at->format('d.m.Y H:i') }}</td>
                             <td class="text-end">
-                                <a href="{{ route('users.edit', $user->id) }}" class="light-btn me-2">
+                                <a href="{{ route('users.edit', $user->id) }}" class="light-btn bordered me-2">
                                     <i class="bi bi-pencil-square"></i>
                                 </a>
                                 @if($user->id !== auth()->id())
                                 <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Naozaj chcete vymazať tohto používateľa?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="light-btn">
+                                    <button type="submit" class="light-btn bordered">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>

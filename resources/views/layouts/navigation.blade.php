@@ -21,6 +21,18 @@
                         {{ __('Dashboard') }}
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('tickets.index') ? 'active' : '' }} {{ request()->routeIs('tickets.show') ? 'active' : '' }}" href="{{ route('tickets.index') }}">
+                        <i class="bi bi-ticket me-2"></i>
+                        {{ __('Tikety') }}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('tickets.create') ? 'active' : '' }}" href="{{ route('tickets.create') }}">
+                        <i class="bi bi-plus me-2"></i>
+                        Vytvoriť tiket
+                    </a>
+                </li>
                 @if(Auth::user()->role === 'superadmin')
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}" href="{{ route('users.index') }}">
@@ -37,12 +49,6 @@
                         </a>
                     </li>
                 @endif
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('tickets.*') ? 'active' : '' }}" href="{{ route('tickets.index') }}">
-                        <i class="bi bi-ticket me-2"></i>
-                        {{ __('Tikety') }}
-                    </a>
-                </li>
             </ul>
         </nav>
 

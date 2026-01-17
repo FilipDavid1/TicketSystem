@@ -3,11 +3,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- favicon -->
+    <link rel="icon" href="{{ asset('images/favicon.ico') }}">
 
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', 'TicketSystem') }}</title>
 
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">
@@ -58,7 +60,7 @@
             @endguest
 
             <!-- Main Content -->
-            <main class="@guest py-4 @endguest">
+            <main class="@guest py-4 @endguest py-3 py-md-5">
                 @yield('content')
             </main>
         </div>
