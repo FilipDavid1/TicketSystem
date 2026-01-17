@@ -53,7 +53,7 @@ class TicketController extends Controller
             $query->where('user_id', $request->user);
         }
 
-        $tickets = $query->orderBy('created_at', 'desc')->get();
+        $tickets = $query->orderBy('created_at', 'desc')->paginate(10);
         
         $users = [];
         if (in_array($user->role, ['admin', 'superadmin'])) {
@@ -239,15 +239,26 @@ class TicketController extends Controller
             $query->where('user_id', $request->user);
         }
 
-        $tickets = $query->with(['category', 'user'])->orderBy('created_at', 'desc')->get();
+        $countQuery = clone $query;
+        $allTickets = $countQuery->get();
+        
+        $tickets = $query->with(['category', 'user'])->orderBy('created_at', 'desc')->paginate(10);
         
         return response()->json([
-            'tickets' => $tickets,
+            'tickets' => $tickets->items(),
+            'pagination' => [
+                'current_page' => $tickets->currentPage(),
+                'last_page' => $tickets->lastPage(),
+                'per_page' => $tickets->perPage(),
+                'total' => $tickets->total(),
+                'from' => $tickets->firstItem(),
+                'to' => $tickets->lastItem(),
+            ],
             'counts' => [
-                'open' => $tickets->where('status', 'open')->count(),
-                'in_progress' => $tickets->where('status', 'in_progress')->count(),
-                'resolved' => $tickets->where('status', 'resolved')->count(),
-                'total' => $tickets->count()
+                'open' => $allTickets->where('status', 'open')->count(),
+                'in_progress' => $allTickets->where('status', 'in_progress')->count(),
+                'resolved' => $allTickets->where('status', 'resolved')->count(),
+                'total' => $tickets->total()
             ]
         ]);
     }

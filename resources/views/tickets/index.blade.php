@@ -182,6 +182,11 @@
         @endforeach
       </tbody>
     </table>
+    
+    <!-- Pagination -->
+    <div id="paginationContainer" class="mt-4">
+      {{ $tickets->links('pagination::custom') }}
+    </div>
   </div>
 </div>
 
@@ -194,11 +199,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const prioritySelect = document.getElementById('priority');
     const userSelect = document.getElementById('user');
     let searchTimeout;
+    let currentPage = 1;
 
-    // Function to fetch and update tickets
-    function filterTickets() {
+    function filterTickets(page = 1) {
         const formData = new FormData(filtersForm);
         const params = new URLSearchParams(formData);
+        params.append('page', page);
 
         fetch('{{ route("tickets.filter") }}?' + params.toString(), {
             headers: {
@@ -210,13 +216,14 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             updateTicketsTable(data.tickets);
             updateTicketsCounts(data.counts);
+            updatePagination(data.pagination);
+            currentPage = page;
         })
         .catch(error => {
             console.error('Error filtering tickets:', error);
         });
     }
 
-    // Update tickets table
     function updateTicketsTable(tickets) {
         const tbody = document.getElementById('ticketsTableBody');
         
@@ -265,7 +272,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }).join('');
     }
 
-    // Update ticket counts
     function updateTicketsCounts(counts) {
         const countElements = document.querySelectorAll('.wrapper .col-12.col-md-6.col-lg-4 .wrapper');
         if (countElements.length >= 3) {
@@ -285,19 +291,116 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Add event listeners for immediate filter changes
-    statusSelect.addEventListener('change', filterTickets);
-    categorySelect.addEventListener('change', filterTickets);
-    prioritySelect.addEventListener('change', filterTickets);
-    
-    if (userSelect) {
-        userSelect.addEventListener('change', filterTickets);
+    function updatePagination(pagination) {
+        const container = document.getElementById('paginationContainer');
+        
+        if (pagination.last_page <= 1) {
+            container.innerHTML = '';
+            return;
+        }
+
+        let paginationHTML = '<nav><ul class="pagination justify-content-center mb-3">';
+        
+        if (pagination.current_page > 1) {
+            paginationHTML += `
+                <li class="page-item">
+                    <a class="page-link" href="#" data-page="${pagination.current_page - 1}">&laquo;</a>
+                </li>
+            `;
+        } else {
+            paginationHTML += `
+                <li class="page-item disabled">
+                    <span class="page-link">&laquo;</span>
+                </li>
+            `;
+        }
+
+        const startPage = Math.max(1, pagination.current_page - 2);
+        const endPage = Math.min(pagination.last_page, pagination.current_page + 2);
+
+        if (startPage > 1) {
+            paginationHTML += `
+                <li class="page-item">
+                    <a class="page-link" href="#" data-page="1">1</a>
+                </li>
+            `;
+            if (startPage > 2) {
+                paginationHTML += '<li class="page-item disabled"><span class="page-link">...</span></li>';
+            }
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            if (i === pagination.current_page) {
+                paginationHTML += `
+                    <li class="page-item active">
+                        <span class="page-link">${i}</span>
+                    </li>
+                `;
+            } else {
+                paginationHTML += `
+                    <li class="page-item">
+                        <a class="page-link" href="#" data-page="${i}">${i}</a>
+                    </li>
+                `;
+            }
+        }
+
+        if (endPage < pagination.last_page) {
+            if (endPage < pagination.last_page - 1) {
+                paginationHTML += '<li class="page-item disabled"><span class="page-link">...</span></li>';
+            }
+            paginationHTML += `
+                <li class="page-item">
+                    <a class="page-link" href="#" data-page="${pagination.last_page}">${pagination.last_page}</a>
+                </li>
+            `;
+        }
+
+        if (pagination.current_page < pagination.last_page) {
+            paginationHTML += `
+                <li class="page-item">
+                    <a class="page-link" href="#" data-page="${pagination.current_page + 1}">&raquo;</a>
+                </li>
+            `;
+        } else {
+            paginationHTML += `
+                <li class="page-item disabled">
+                    <span class="page-link">&raquo;</span>
+                </li>
+            `;
+        }
+
+        paginationHTML += '</ul></nav>';
+        
+        paginationHTML += `
+            <div class="text-center">
+                <small class="text-muted">Zobrazené ${pagination.from || 0} - ${pagination.to || 0} z ${pagination.total} tiketov</small>
+            </div>
+        `;
+        
+        container.innerHTML = paginationHTML;
+
+        container.querySelectorAll('.page-link[data-page]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const page = parseInt(this.getAttribute('data-page'));
+                filterTickets(page);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
     }
 
-    // Add debounced event listener for search input
+    statusSelect.addEventListener('change', () => filterTickets(1));
+    categorySelect.addEventListener('change', () => filterTickets(1));
+    prioritySelect.addEventListener('change', () => filterTickets(1));
+    
+    if (userSelect) {
+        userSelect.addEventListener('change', () => filterTickets(1));
+    }
+
     searchInput.addEventListener('input', function() {
         clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(filterTickets, 500);
+        searchTimeout = setTimeout(() => filterTickets(1), 500);
     });
 });
 </script>
