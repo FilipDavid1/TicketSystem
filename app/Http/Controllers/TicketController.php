@@ -203,4 +203,52 @@ class TicketController extends Controller
 
         return redirect()->route('tickets.index')->with('success', 'Tiket bol úspešne zmazaný.');
     }
+
+    public function filter(Request $request)
+    {
+        $query = Ticket::query();
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('priority')) {
+            $query->where('priority', $request->priority);
+        }
+
+        if ($request->filled('category')) {
+            $query->where('category_id', $request->category);
+        }
+
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('title', 'like', '%' . $request->search . '%')
+                    ->orWhere('description', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        $user = Auth::user();
+        
+        if ($user->role === 'admin') {
+            $query->forAdmin($user->id);
+        }
+
+        if ($user->role === 'user') {
+            $query->where('user_id', Auth::id());
+        } elseif ($request->filled('user') && in_array($user->role, ['admin', 'superadmin'])) {
+            $query->where('user_id', $request->user);
+        }
+
+        $tickets = $query->with(['category', 'user'])->orderBy('created_at', 'desc')->get();
+        
+        return response()->json([
+            'tickets' => $tickets,
+            'counts' => [
+                'open' => $tickets->where('status', 'open')->count(),
+                'in_progress' => $tickets->where('status', 'in_progress')->count(),
+                'resolved' => $tickets->where('status', 'resolved')->count(),
+                'total' => $tickets->count()
+            ]
+        ]);
+    }
 }

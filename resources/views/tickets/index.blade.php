@@ -4,8 +4,8 @@
 <div class="container">
   <div class="row">
     <div class="col-6">
-      <h2>Nástenka</h2>
-      <p>Prehľad všetkých podporných tiketov</p>
+      <h2>Tikety</h2>
+      <p>Prehľad všetkých tiketov</p>
     </div>
     <div class="col-6">
       <div class="d-flex justify-content-end">
@@ -38,9 +38,7 @@
     <div class="row">
       <div class="col-6">
         <p class="d-flex align-items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-funnel" viewBox="0 0 16 16">
-            <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z" />
-          </svg>
+          <i class="bi bi-funnel"></i>
           <span>Filtre</span>
         </p>
       </div>
@@ -48,9 +46,7 @@
         <div class="d-flex justify-content-end">
           @if(request()->has('status') || request()->has('category') || request()->has('priority') || request()->has('search') || request()->has('user'))
           <a href="{{ route('tickets.index') }}" class="light-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
-              <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708" />
-            </svg>
+            <i class="bi bi-x"></i>
             <span>Zrušiť filtre</span>
           </a>
           @endif
@@ -69,7 +65,7 @@
 
         <div class="col-12 col-md-3">
           <label for="status">Stav</label>
-          <select name="status" id="status" class="form-control" onchange="this.form.submit()">
+          <select name="status" id="status" class="form-control">
             <option value="">Všetky</option>
             <option value="open" {{ request('status') == 'open' ? 'selected' : '' }}>Otvorené</option>
             <option value="in_progress" {{ request('status') == 'in_progress' ? 'selected' : '' }}>V riešení</option>
@@ -80,7 +76,7 @@
 
         <div class="col-12 col-md-3">
           <label for="category">Kategória</label>
-          <select name="category" id="category" class="form-control" onchange="this.form.submit()">
+          <select name="category" id="category" class="form-control">
             <option value="">Všetky</option>
             @foreach($categories as $category)
             <option value="{{ $category->id }}" {{ request('category') == $category->id ? 'selected' : '' }}>
@@ -92,7 +88,7 @@
 
         <div class="col-12 col-md-3">
           <label for="priority">Priorita</label>
-          <select name="priority" id="priority" class="form-control" onchange="this.form.submit()">
+          <select name="priority" id="priority" class="form-control">
             <option value="">Všetky</option>
             <option value="low" {{ request('priority') == 'low' ? 'selected' : '' }}>Nízka</option>
             <option value="medium" {{ request('priority') == 'medium' ? 'selected' : '' }}>Stredná</option>
@@ -103,7 +99,7 @@
         @if(in_array(Auth::user()->role, ['admin', 'superadmin']))
         <div class="col-12 col-md-3 mt-3">
           <label for="user">Používateľ</label>
-          <select name="user" id="user" class="form-control" onchange="this.form.submit()">
+          <select name="user" id="user" class="form-control">
             <option value="">Všetci</option>
             @foreach($users as $filterUser)
             <option value="{{ $filterUser->id }}" {{ request('user') == $filterUser->id ? 'selected' : '' }}>
@@ -119,9 +115,9 @@
 
   <div class="wrapper">
     @if(Auth::user()->role === 'user')
-    <p>Moje tickety ({{ $tickets->count() }})</p>
+    <p id="ticketsCount">Moje tickety ({{ $tickets->count() }})</p>
     @else
-    <p>Všetky tickety ({{ $tickets->count() }})</p>
+    <p id="ticketsCount">Všetky tickety ({{ $tickets->count() }})</p>
     @endif
     <table class="table">
       <thead>
@@ -136,7 +132,7 @@
           <th>Akcia</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody id="ticketsTableBody">
         @foreach($tickets as $ticket)
         <tr>
           <td>{{ $ticket->id }}</td>
@@ -188,4 +184,121 @@
     </table>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filtersForm = document.getElementById('filtersForm');
+    const searchInput = document.getElementById('search');
+    const statusSelect = document.getElementById('status');
+    const categorySelect = document.getElementById('category');
+    const prioritySelect = document.getElementById('priority');
+    const userSelect = document.getElementById('user');
+    let searchTimeout;
+
+    // Function to fetch and update tickets
+    function filterTickets() {
+        const formData = new FormData(filtersForm);
+        const params = new URLSearchParams(formData);
+
+        fetch('{{ route("tickets.filter") }}?' + params.toString(), {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            updateTicketsTable(data.tickets);
+            updateTicketsCounts(data.counts);
+        })
+        .catch(error => {
+            console.error('Error filtering tickets:', error);
+        });
+    }
+
+    // Update tickets table
+    function updateTicketsTable(tickets) {
+        const tbody = document.getElementById('ticketsTableBody');
+        
+        if (tickets.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center">Žiadne tikety</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = tickets.map(ticket => {
+            const statusBadges = {
+                'open': '<span class="badge badge-open">Otvorené</span>',
+                'in_progress': '<span class="badge badge-in-progress">V riešení</span>',
+                'resolved': '<span class="badge badge-resolved">Vyriešené</span>',
+                'rejected': '<span class="badge badge-rejected">Zamietnuté</span>'
+            };
+
+            const priorityBadges = {
+                'low': '<span class="badge badge-low">Nízka</span>',
+                'medium': '<span class="badge badge-medium">Stredná</span>',
+                'high': '<span class="badge badge-in-progress">Vysoká</span>'
+            };
+
+            const createdDate = new Date(ticket.created_at);
+            const formattedDate = createdDate.toLocaleString('sk-SK', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            return `
+                <tr>
+                    <td>${ticket.id}</td>
+                    <td>${ticket.title}</td>
+                    <td>${ticket.category.name}</td>
+                    <td>${statusBadges[ticket.status]}</td>
+                    <td>${priorityBadges[ticket.priority]}</td>
+                    <td>${ticket.user.name}</td>
+                    <td>${formattedDate}</td>
+                    <td>
+                        <a href="/tickets/${ticket.id}" class="light-btn">Zobraziť</a>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    // Update ticket counts
+    function updateTicketsCounts(counts) {
+        const countElements = document.querySelectorAll('.wrapper .col-12.col-md-6.col-lg-4 .wrapper');
+        if (countElements.length >= 3) {
+            countElements[0].textContent = `Otvorené tickety (${counts.open})`;
+            countElements[1].textContent = `v riešení (${counts.in_progress})`;
+            countElements[2].textContent = `Vyriešené tickety (${counts.resolved})`;
+        }
+
+        const userRole = '{{ Auth::user()->role }}';
+        const ticketsCount = document.getElementById('ticketsCount');
+        if (ticketsCount) {
+            if (userRole === 'user') {
+                ticketsCount.textContent = `Moje tickety (${counts.total})`;
+            } else {
+                ticketsCount.textContent = `Všetky tickety (${counts.total})`;
+            }
+        }
+    }
+
+    // Add event listeners for immediate filter changes
+    statusSelect.addEventListener('change', filterTickets);
+    categorySelect.addEventListener('change', filterTickets);
+    prioritySelect.addEventListener('change', filterTickets);
+    
+    if (userSelect) {
+        userSelect.addEventListener('change', filterTickets);
+    }
+
+    // Add debounced event listener for search input
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(filterTickets, 500);
+    });
+});
+</script>
 @endsection
