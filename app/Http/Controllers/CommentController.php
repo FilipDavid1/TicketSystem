@@ -16,9 +16,19 @@ class CommentController extends Controller
 
         $validated['user_id'] = Auth::id();
         $validated['ticket_id'] = $ticket_id;
-        Comment::create($validated);
+        $comment = Comment::create($validated);
+
+        $comment->load('user');
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'comment' => $comment,
+                'message' => 'Komentár bol úspešne pridaný!'
+            ]);
+        }
 
         return redirect()->route('tickets.show', $ticket_id)
-            ->with('success', 'Comment added successfully!');
+            ->with('success', 'Komentár bol úspešne pridaný!');
     }
 }

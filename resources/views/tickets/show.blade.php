@@ -126,10 +126,7 @@
         @if(isset($ticket) && $ticket && (Auth::user()->role === 'superadmin' || $ticket->user_id === Auth::id()))
         <div>
           <button type="button" class="btn btn-danger" onclick="if(confirm('Naozaj chcete zmazať tento tiket?')) { document.getElementById('delete-form-{{ $ticket->id }}').submit(); }">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-              <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
-              <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
-            </svg>
+            <i class="bi bi-trash"></i>
             Zmazať tiket
           </button>
         </div>
@@ -168,8 +165,8 @@
   <div class="wrapper">
     <h3>Komentáre</h3>
     
-    @if(isset($ticket) && $ticket && $ticket->comments->isNotEmpty())
-      <div class="mb-4">
+    <div id="commentsContainer" class="mb-4">
+      @if(isset($ticket) && $ticket && $ticket->comments->isNotEmpty())
         @foreach($ticket->comments as $comment)
           <div class="comment mb-3 p-3 border rounded">
             <div class="d-flex justify-content-between align-items-start mb-2">
@@ -179,12 +176,16 @@
             <p class="mb-0">{{ $comment->content }}</p>
           </div>
         @endforeach
-      </div>
-    @else
-      <p class="text-muted mb-4">Žiadne komentáre.</p>
-    @endif
+      @else
+        <p class="text-muted" id="noCommentsMessage">Žiadne komentáre.</p>
+      @endif
+    </div>
 
-    <form method="POST" action="{{ route('comments.store', $ticket->id) }}">
+    <div id="commentAlert" class="alert alert-success" style="display: none;">
+      Komentár bol úspešne pridaný!
+    </div>
+
+    <form id="commentForm" method="POST" action="{{ route('comments.store', $ticket->id) }}">
       @csrf
       <div class="row">
         <div class="col-12 mb-3">
@@ -198,15 +199,96 @@
           @error('content')
             <div class="invalid-feedback">{{ $message }}</div>
           @enderror
+          <div id="contentError" class="invalid-feedback" style="display: none;"></div>
         </div>
       </div>
       <div class="d-flex justify-content-end gap-2">
-        <button type="submit" class="dark-btn">
+        <button type="submit" class="dark-btn" id="submitCommentBtn">
           Pridať komentár
         </button>
       </div>
-      </form>
-    </div>
+    </form>
+  </div>
   @endif
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const commentForm = document.getElementById('commentForm');
+    
+    if (commentForm) {
+        commentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submitBtn = document.getElementById('submitCommentBtn');
+            const contentTextarea = document.getElementById('content');
+            const contentError = document.getElementById('contentError');
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Pridávam...';
+            
+            contentTextarea.classList.remove('is-invalid');
+            contentError.style.display = 'none';
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    contentTextarea.value = '';
+                    
+                    const alert = document.getElementById('commentAlert');
+                    alert.style.display = 'block';
+                    setTimeout(() => {
+                        alert.style.display = 'none';
+                    }, 3000);
+                    
+                    const noCommentsMsg = document.getElementById('noCommentsMessage');
+                    if (noCommentsMsg) {
+                        noCommentsMsg.remove();
+                    }
+                    
+                    const commentsContainer = document.getElementById('commentsContainer');
+                    const commentHtml = `
+                        <div class="comment mb-3 p-3 border rounded">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <strong>${data.comment.user.name}</strong>
+                                <small class="text-muted">Práve teraz</small>
+                            </div>
+                            <p class="mb-0">${escapeHtml(data.comment.content)}</p>
+                        </div>
+                    `;
+                    commentsContainer.insertAdjacentHTML('beforeend', commentHtml);
+                    
+                    commentsContainer.lastElementChild.scrollIntoView({ behavior: 'smooth' });
+                }
+            })
+            .catch(error => {
+                console.error('Error adding comment:', error);
+                contentTextarea.classList.add('is-invalid');
+                contentError.textContent = 'Nastala chyba pri pridávaní komentára.';
+                contentError.style.display = 'block';
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Pridať komentár';
+            });
+        });
+    }
+    
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+});
+</script>
 @endsection
