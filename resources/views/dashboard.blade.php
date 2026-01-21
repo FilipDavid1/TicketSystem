@@ -342,7 +342,7 @@
                                     <div class="d-flex justify-content-between align-items-start px-0">
                                         <div class="flex-grow-1">
                                             <h6 class="mb-1">{{ $ticket->title }}</h6>
-                                            <small class="text-muted">{{ Str::limit($ticket->description, 80) }}</small>
+                                            <small class="text-muted">{{ Str::limit(strip_tags($ticket->description), 80) }}</small>
                                         </div>
                                         @if($ticket->priority === 'low')
                                         <span class="badge ms-2 badge-low">

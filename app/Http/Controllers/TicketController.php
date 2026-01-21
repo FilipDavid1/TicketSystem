@@ -6,6 +6,7 @@ use App\Models\Ticket;
 use App\Models\Category;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Mews\Purifier\Facades\Purifier;
 
 class TicketController extends Controller
 {
@@ -167,6 +168,7 @@ class TicketController extends Controller
                 'category_id' => 'required|exists:categories,id',
                 'priority' => 'required|in:low,medium,high',
             ]);
+            $validated['description'] = Purifier::clean($validated['description']);
         } elseif ($user->role === 'admin') {
             $hasAccess = $ticket->category->admins()->where('users.id', $user->id)->exists();
             if (!$hasAccess) {
@@ -183,6 +185,7 @@ class TicketController extends Controller
                 'priority' => 'required|in:low,medium,high',
                 'status' => 'required|in:open,in_progress,resolved,rejected',
             ]);
+            $validated['description'] = Purifier::clean($validated['description']);
         }
 
         $ticket->update($validated);

@@ -45,12 +45,18 @@
 
         <div class="col-12 mb-3">
           <label for="description" class="form-label">Popis <span class="text-danger">*</span></label>
-          <textarea class="form-control @error('description') is-invalid @enderror" 
-            id="description" 
-            name="description" 
-            rows="6" 
-            {{ Auth::user()->role === 'admin' && isset($ticket) && $ticket ? 'readonly disabled' : 'required' }}
-            placeholder="Zadajte popis tiketu">{{ old('description', isset($ticket) && $ticket ? $ticket->description : '') }}</textarea>
+          @if(Auth::user()->role === 'admin' && isset($ticket) && $ticket)
+            <div class="form-control" style="min-height: 150px; background-color: #e9ecef; cursor: not-allowed;">
+              {!! isset($ticket) && $ticket ? $ticket->description : '' !!}
+            </div>
+          @else
+            <textarea class="form-control @error('description') is-invalid @enderror" 
+              id="description" 
+              name="description" 
+              rows="6" 
+              required
+              placeholder="Zadajte popis tiketu">{{ old('description', isset($ticket) && $ticket ? $ticket->description : '') }}</textarea>
+          @endif
           @error('description')
             <div class="invalid-feedback">{{ $message }}</div>
           @enderror
@@ -291,4 +297,51 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
+@push('scripts')
+<script src="https://cdn.tiny.cloud/1/{{ config('services.tinymce.api_key') }}/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const descriptionField = document.getElementById('description');
+    
+    if (descriptionField && !descriptionField.hasAttribute('disabled')) {
+        tinymce.init({
+            selector: '#description',
+            height: 400,
+            menubar: false,
+            plugins: [
+                'advlist', 'autolink', 'lists', 'link', 'charmap',
+                'searchreplace', 'visualblocks', 'code',
+                'insertdatetime', 'table', 'help', 'wordcount'
+            ],
+            toolbar: 'undo redo | formatselect | ' +
+                'bold italic underline strikethrough | forecolor backcolor | ' +
+                'alignleft aligncenter alignright alignjustify | ' +
+                'bullist numlist outdent indent | ' +
+                'link | removeformat | code | help',
+            content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; padding: 10px; }',
+            promotion: false,
+            branding: false,
+
+            extended_valid_elements: 'p[style],span[style],div[style],strong[style],em[style],u[style],strike[style],s[style],h1[style],h2[style],h3[style],h4[style],h5[style],h6[style],a[href|target|style],ul[style],ol[style],li[style],blockquote[style],code[style],pre[style],br,img[src|alt|width|height|style]',
+            valid_styles: {
+                '*': 'color,background-color,text-align,font-size,font-weight,font-family,font-style,text-decoration,padding,margin,border,line-height,width,height'
+            },
+            formats: {
+                alignleft: { selector: 'p,h1,h2,h3,h4,h5,h6,td,th,div,ul,ol,li,table,img', styles: { textAlign: 'left' } },
+                aligncenter: { selector: 'p,h1,h2,h3,h4,h5,h6,td,th,div,ul,ol,li,table,img', styles: { textAlign: 'center' } },
+                alignright: { selector: 'p,h1,h2,h3,h4,h5,h6,td,th,div,ul,ol,li,table,img', styles: { textAlign: 'right' } },
+                alignjustify: { selector: 'p,h1,h2,h3,h4,h5,h6,td,th,div,ul,ol,li,table,img', styles: { textAlign: 'justify' } },
+            },
+            setup: function(editor) {
+                editor.on('change', function() {
+                    editor.save();
+                });
+            }
+        });
+    }
+});
+</script>
+@endpush
+
 @endsection
